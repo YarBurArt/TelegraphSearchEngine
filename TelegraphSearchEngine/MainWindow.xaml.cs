@@ -19,14 +19,17 @@ namespace TelegraphSearchEngine
         }
         private async void Button_Click(object sender, RoutedEventArgs e)
         {
-            // after pressing start, the values in the fields are processed and you show the result in MessageBox
+            // after pressing start, the values in the fields are processed and you show the result in MessageBox 
+            pbStatus.Value = 10;
             var urlfunc = new UrlFunctions();
             var tasks = new List<Task<byte>>();
+
             var urls = UrlFunctions.GenerateArticleUrl(
                 textBox1.Text ?? "anon", 
                 textBox2.Text ?? "en", 
                 checkBox1.Content.ToString() == "Checked"
                 );
+            pbStatus.Value = 15;
             var urls_result = new List<string>();
             // to each his own task, an asynchronous task
             foreach (var url in urls)
@@ -34,6 +37,7 @@ namespace TelegraphSearchEngine
                 var task = urlfunc.GetStatusUrl(url);
                 tasks.Add(task);
             }
+            pbStatus.Value = 30;
             for (int i = 0; i < tasks.Count; i++)
             {
                 if (tasks[i].Result == 1)
@@ -41,10 +45,16 @@ namespace TelegraphSearchEngine
                     urls_result.Add(urls[i]);
                 }
             }
+            pbStatus.Value = 35;
             await Task.WhenAll(tasks);
+            pbStatus.Value = 100;
             // join to fit on the screen
             string message = String.Join("\n", urls_result);
-            MessageBox.Show(message);
+            Outrext window_out = new Outrext();
+            window_out.Show();
+            window_out.textOutput.Text = message;
+
+            
         }
     }
     public class UrlFunctions
