@@ -10,17 +10,21 @@ namespace TelegraphSearchEngine
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    /// TODO: add filters and neural network, optimize, beautiful GUI
+    /// TODO: add filters 
+    /// TODO: add neural network for word context
+    /// TODO: optimize 
+    
     public partial class MainWindow : Window
     {
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = new MainViewModel();
         }
         private async void Button_Click(object sender, RoutedEventArgs e)
         {
             // after pressing start, the values in the fields are processed and you show the result in MessageBox 
-            pbStatus.Value = 10;
+            //pbStatus.Value = 10;
             var urlfunc = new UrlFunctions();
             var tasks = new List<Task<byte>>();
 
@@ -29,7 +33,7 @@ namespace TelegraphSearchEngine
                 textBox2.Text ?? "en", 
                 checkBox1.Content.ToString() == "Checked"
                 );
-            pbStatus.Value = 15;
+            //pbStatus.Value = 15;
             var urls_result = new List<string>();
             // to each his own task, an asynchronous task
             foreach (var url in urls)
@@ -37,15 +41,18 @@ namespace TelegraphSearchEngine
                 var task = urlfunc.GetStatusUrl(url);
                 tasks.Add(task);
             }
-            pbStatus.Value = 30;
+            MessageBox.Show("debug 1");
+            //pbStatus.Value = 30;
             for (int i = 0; i < tasks.Count; i++)
             {
                 if (tasks[i].Result == 1)
                     urls_result.Add(urls[i]);
             }
-            pbStatus.Value = 35;
+            //pbStatus.Value = 35;
+            MessageBox.Show("Start check");
             await Task.WhenAll(tasks);
-            pbStatus.Value = 100;
+            MessageBox.Show("End");
+            //pbStatus.Value = 100;
             // join to fit on the screen
             string message = String.Join("\n", urls_result);
             Outrext window_out = new Outrext();
