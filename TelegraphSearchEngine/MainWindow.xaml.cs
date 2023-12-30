@@ -41,9 +41,7 @@ namespace TelegraphSearchEngine
             for (int i = 0; i < tasks.Count; i++)
             {
                 if (tasks[i].Result == 1)
-                {
                     urls_result.Add(urls[i]);
-                }
             }
             pbStatus.Value = 35;
             await Task.WhenAll(tasks);
