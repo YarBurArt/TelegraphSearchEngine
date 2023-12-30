@@ -11,6 +11,7 @@ namespace TelegraphSearchEngine
     {
         private Action<object> execute;
         private Func<object, bool> canExecute;
+        private Action<object> value;
 
         public event EventHandler CanExecuteChanged
         {
@@ -22,6 +23,11 @@ namespace TelegraphSearchEngine
         {
             this.execute = execute;
             this.canExecute = canExecute;
+        }
+
+        public StartSearchCommand(Action<object> value)
+        {
+            this.value = value;
         }
 
         public bool CanExecute(object parameter)
