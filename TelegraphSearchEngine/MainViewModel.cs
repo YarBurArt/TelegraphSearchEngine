@@ -66,39 +66,42 @@ namespace TelegraphSearchEngine
         {
             get
             {
-                return new StartSearchCommand((obj) =>
+                return new RelayCommand((obj) =>
                 {
-                    // after pressing start, the values in the fields are processed and you show the result in MessageBox 
-                    var urlfunc = new UrlFunctions();
-                    var tasks = new List<Task<byte>>();
+                    Task.Factory.StartNew(() =>
+                    {
+                        // after pressing start, the values in the fields are processed and you show the result in MessageBox 
+                        var urlfunc = new UrlFunctions();
+                        var tasks = new List<Task<byte>>();
 
-                    var urls = UrlFunctions.GenerateArticleUrl(
-                        NameValue ?? "anon",
-                        LangValue ?? "en",
-                        //(checkBox1.Content.ToString() == "Checked") ?? false
-                        false
-                        );
-                    var urls_result = new List<string>();
-                    // to each his own task, an asynchronous task
-                    foreach (var url in urls)
-                    {
-                        var task = urlfunc.GetStatusUrl(url);
-                        tasks.Add(task);
-                    }
-                    MessageBox.Show("debug 1");
-                    for (int i = 0; i < tasks.Count; i++)
-                    {
-                        if (tasks[i].Result == 1)
-                            urls_result.Add(urls[i]);
-                    }
-                    MessageBox.Show("Start check");
-                    Task.WhenAll(tasks);
-                    MessageBox.Show("End");
-                    // join to fit on the screen
-                    string message = String.Join("\n", urls_result);
-                    Outrext window_out = new Outrext();
-                    window_out.Show();
-                    window_out.textOutput.Text = message;
+                        var urls = UrlFunctions.GenerateArticleUrl(
+                            NameValue ?? "anon",
+                            LangValue ?? "en",
+                            //(checkBox1.Content.ToString() == "Checked") ?? false
+                            false
+                            );
+                        var urls_result = new List<string>();
+                        // to each his own task, an asynchronous task
+                        foreach (var url in urls)
+                        {
+                            var task = urlfunc.GetStatusUrl(url);
+                            tasks.Add(task);
+                        }
+                        MessageBox.Show("debug 1");
+                        for (int i = 0; i < tasks.Count; i++)
+                        {
+                            if (tasks[i].Result == 1)
+                                urls_result.Add(urls[i]);
+                        }
+                        //MessageBox.Show("Start check");
+                        Task.WhenAll(tasks);
+                        //MessageBox.Show("End");
+                        // join to fit on the screen
+                        string message = String.Join("\n", urls_result);
+                        Outrext window_out = new Outrext();
+                        window_out.Show();
+                        window_out.textOutput.Text = message;
+                    });
                 });
             }
         }

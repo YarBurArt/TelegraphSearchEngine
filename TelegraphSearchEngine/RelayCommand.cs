@@ -7,11 +7,11 @@ using System.Windows.Input;
 
 namespace TelegraphSearchEngine
 {
-    class StartSearchCommand : ICommand
+    class RelayCommand : ICommand
     {
         private Action<object> execute;
         private Func<object, bool> canExecute;
-        private Action<object> value;
+  
 
         public event EventHandler CanExecuteChanged
         {
@@ -19,15 +19,10 @@ namespace TelegraphSearchEngine
             remove { CommandManager.RequerySuggested -= value; }
         }
 
-        public StartSearchCommand(Action<object> execute, Func<object, bool> canExecute)
+        public RelayCommand(Action<object> execute, Func<object, bool> canExecute = null)
         {
             this.execute = execute;
             this.canExecute = canExecute;
-        }
-
-        public StartSearchCommand(Action<object> value)
-        {
-            this.value = value;
         }
 
         public bool CanExecute(object parameter)
