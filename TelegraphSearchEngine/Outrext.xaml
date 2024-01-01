@@ -7,7 +7,8 @@
         mc:Ignorable="d"
         Title="Outrext" Height="450" Width="800">
     <Grid>
-        <TextBlock x:Name="textOutput" HorizontalAlignment="Left" Height="390" Margin="20,20,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="755"/>
-
+        <ScrollViewer>
+            <TextBlock x:Name="textOutput" HorizontalAlignment="Left" Height="390" Margin="20,20,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="755"/>
+        </ScrollViewer>
     </Grid>
 </Window>

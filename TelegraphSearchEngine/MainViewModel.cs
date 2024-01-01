@@ -9,6 +9,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Threading;
 
 namespace TelegraphSearchEngine
 {
@@ -54,7 +56,7 @@ namespace TelegraphSearchEngine
         public MainViewModel() {
             Task.Factory.StartNew(() =>
             {
-                while (StatusValue <= 100)
+                while (StatusValue <= 35)
                 {
                     Task.Delay(1000).Wait();
                     StatusValue++;
@@ -87,20 +89,36 @@ namespace TelegraphSearchEngine
                             var task = urlfunc.GetStatusUrl(url);
                             tasks.Add(task);
                         }
-                        MessageBox.Show("debug 1");
+                        Application.Current.Dispatcher.BeginInvoke(
+                           System.Windows.Threading.DispatcherPriority.Normal
+                           , new DispatcherOperationCallback(delegate
+                           {
+                               StatusValue = 50;
+                               return null;
+                           }), null);
                         for (int i = 0; i < tasks.Count; i++)
                         {
                             if (tasks[i].Result == 1)
                                 urls_result.Add(urls[i]);
                         }
-                        //MessageBox.Show("Start check");
+                        
                         Task.WhenAll(tasks);
-                        //MessageBox.Show("End");
+                        Application.Current.Dispatcher.BeginInvoke(
+                           System.Windows.Threading.DispatcherPriority.Normal
+                           , new DispatcherOperationCallback(delegate
+                           {
+                               StatusValue = 100;
+                               return null;
+                           }), null);
                         // join to fit on the screen
                         string message = String.Join("\n", urls_result);
-                        Outrext window_out = new Outrext();
-                        window_out.Show();
-                        window_out.textOutput.Text = message;
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            Outrext window_out = new Outrext();
+                            window_out.Show();
+                            window_out.textOutput.Text = message;
+                            StatusValue = 1;
+                        });                     
                     });
                 });
             }
