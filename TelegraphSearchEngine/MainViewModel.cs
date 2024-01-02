@@ -15,7 +15,7 @@ namespace TelegraphSearchEngine
 {
     class MainViewModel : INotifyPropertyChanged
     {
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
         public void OnPropertyChanged([CallerMemberName] string prop = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
@@ -184,24 +184,24 @@ namespace TelegraphSearchEngine
         // translit russian text just like the telegraph does
         // example: шифр -> shifr (translate like cipher)
         Dictionary<string, string> dictionaryChar = new Dictionary<string, string>()
-            {
-                {"а","a"}, {"б","b"}, {"в","v"}, {"г","g"}, {"д","d"}, {"е","e"},
-                {"ё","yo"}, {"ж","zh"}, {"з","z"}, {"и","i"}, {"й","y"}, {"к","k"},
-                {"л","l"}, {"м","m"}, {"н","n"}, {"о","o"}, {"п","p"}, {"р","r"},
-                {"с","s"}, {"т","t"}, {"у","u"}, {"ф","f"}, {"х","h"}, {"ц","ts"},
-                {"ч","ch"}, {"ш","sh"}, {"щ","sch"}, {"ъ","'"}, {"ы","yi"},
-                {"ь",""}, {"э","e"}, {"ю","yu"}, {"я","ya"}
-                };
+        {
+            {"а","a"},  {"б","b"},  {"в","v"},   {"г","g"}, {"д","d"}, {"е","e"},
+            {"ё","yo"}, {"ж","zh"}, {"з","z"},   {"и","i"}, {"й","y"}, {"к","k"},
+            {"л","l"},  {"м","m"},  {"н","n"},   {"о","o"}, {"п","p"}, {"р","r"},
+            {"с","s"},  {"т","t"},  {"у","u"},   {"ф","f"}, {"х","h"}, {"ц","ts"},
+            {"ч","ch"}, {"ш","sh"}, {"щ","sch"}, {"ъ","'"}, {"ы","yi"},
+            {"ь",""},   {"э","e"},  {"ю","yu"},  {"я","ya"}
+        };
         public string TranslitName(string source)
         {
             // replacing each character with the corresponding one in the dictionary or leave it as it is
-            var result = "";
+            string result = "";
             foreach (var ch in source)
             {
-                var ss = "";
-                if (dictionaryChar.TryGetValue(ch.ToString(), out ss)) // get vaule by key 
+                string reverse_ch = "";
+                if (dictionaryChar.TryGetValue(ch.ToString(), out reverse_ch!)) // get vaule by key 
                 {
-                    result += ss;
+                    result += reverse_ch;
                 }
                 else result += ch;
             }

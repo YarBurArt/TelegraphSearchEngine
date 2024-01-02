@@ -9,23 +9,23 @@ namespace TelegraphSearchEngine
         private Func<object, bool> canExecute;
 
 
-        public event EventHandler CanExecuteChanged
+        public event EventHandler? CanExecuteChanged
         {
             add { CommandManager.RequerySuggested += value; }
             remove { CommandManager.RequerySuggested -= value; }
         }
 
-        public RelayCommand(Action<object> execute, Func<object, bool> canExecute = null)
+        public RelayCommand(Action<object> execute, Func<object, bool> canExecute = () => { return true; })
         {
             this.execute = execute;
             this.canExecute = canExecute;
         }
 
-        public bool CanExecute(object parameter)
+        public bool CanExecute(object? parameter)
         {
             return this.canExecute == null || this.canExecute(parameter);
         }
-        public void Execute(object parameter)
+        public void Execute(object? parameter)
         {
             this.execute(parameter);
         }
