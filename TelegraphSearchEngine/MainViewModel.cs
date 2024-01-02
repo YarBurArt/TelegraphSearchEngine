@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Net.Http;
+using System.Linq.Expressions;
 using System.Net;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
-using System.Text;
+using System.Security.Policy;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using System.Windows;
-using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Threading;
 
 namespace TelegraphSearchEngine
@@ -17,20 +16,20 @@ namespace TelegraphSearchEngine
     class MainViewModel : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
-        public void OnPropertyChanged([CallerMemberName]string prop = "")
+        public void OnPropertyChanged([CallerMemberName] string prop = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
         }
 
         private int _StatusValue;
-        public int StatusValue 
-        { 
-            get { return _StatusValue; } 
+        public int StatusValue
+        {
+            get { return _StatusValue; }
             set
             {
                 _StatusValue = value;
                 OnPropertyChanged();
-            } 
+            }
         }
         private string _NameValue = "anon";
         public string NameValue
@@ -53,7 +52,8 @@ namespace TelegraphSearchEngine
             }
         }
 
-        public MainViewModel() {
+        public MainViewModel()
+        {
             Task.Factory.StartNew(() =>
             {
                 while (StatusValue <= 35)
@@ -63,6 +63,7 @@ namespace TelegraphSearchEngine
                 }
             });
         }
+
 
         public ICommand ClickStartSearch
         {
@@ -84,24 +85,8 @@ namespace TelegraphSearchEngine
                             );
                         var urls_result = new List<string>();
                         // to each his own task, an asynchronous task
-                        foreach (var url in urls)
-                        {
-                            var task = urlfunc.GetStatusUrl(url);
-                            tasks.Add(task);
-                        }
-                        Application.Current.Dispatcher.BeginInvoke(
-                           System.Windows.Threading.DispatcherPriority.Normal
-                           , new DispatcherOperationCallback(delegate
-                           {
-                               StatusValue = 50;
-                               return null;
-                           }), null);
-                        for (int i = 0; i < tasks.Count; i++)
-                        {
-                            if (tasks[i].Result == 1)
-                                urls_result.Add(urls[i]);
-                        }
-                        
+                        GenerateTasks(ref tasks, urls, ref urlfunc, ref urls_result);
+
                         Task.WhenAll(tasks);
                         Application.Current.Dispatcher.BeginInvoke(
                            System.Windows.Threading.DispatcherPriority.Normal
@@ -118,9 +103,38 @@ namespace TelegraphSearchEngine
                             window_out.Show();
                             window_out.textOutput.Text = message;
                             StatusValue = 1;
-                        });                     
+                        });
                     });
                 });
+            }
+        }
+        private void GenerateTasks(
+            ref List<Task<byte>> tasks, List<string> urls, 
+            ref UrlFunctions urlfunc, ref List<string> urls_result)
+        {
+            foreach (var url in urls)
+            {
+                try
+                {
+                    var task = urlfunc.GetStatusUrl(url);
+                    tasks.Add(task);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+            }
+            Application.Current.Dispatcher.BeginInvoke(
+               System.Windows.Threading.DispatcherPriority.Normal
+               , new DispatcherOperationCallback(delegate
+               {
+                   StatusValue = 50;
+                   return null;
+               }), null);
+            for (int i = 0; i < tasks.Count; i++)
+            {
+                if (tasks[i].Result == 1)
+                    urls_result.Add(urls[i]);
             }
         }
     }

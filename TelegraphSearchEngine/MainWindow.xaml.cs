@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 
 namespace TelegraphSearchEngine
 {
@@ -14,7 +9,7 @@ namespace TelegraphSearchEngine
     /// TODO: add filters 
     /// TODO: add neural network for word context
     /// TODO: optimize 
-    
+
     public partial class MainWindow : Window
     {
         public MainWindow()
@@ -22,6 +17,6 @@ namespace TelegraphSearchEngine
             InitializeComponent();
             DataContext = new MainViewModel();
         }
-        
+
     }
 }

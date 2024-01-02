@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace TelegraphSearchEngine
@@ -11,7 +7,7 @@ namespace TelegraphSearchEngine
     {
         private Action<object> execute;
         private Func<object, bool> canExecute;
-  
+
 
         public event EventHandler CanExecuteChanged
         {
@@ -31,7 +27,7 @@ namespace TelegraphSearchEngine
         }
         public void Execute(object parameter)
         {
-            this.execute(parameter);   
+            this.execute(parameter);
         }
     }
 }
