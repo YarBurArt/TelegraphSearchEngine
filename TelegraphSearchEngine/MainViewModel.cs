@@ -80,30 +80,28 @@ namespace TelegraphSearchEngine
                         var urls = UrlFunctions.GenerateArticleUrl(
                             NameValue ?? "anon",
                             LangValue ?? "en",
-                            //(checkBox1.Content.ToString() == "Checked") ?? false
-                            false
+                            false // old (checkBox1.Content.ToString() == "Checked") ?? false
                             );
                         var urls_result = new List<string>();
                         // to each his own task, an asynchronous task
                         GenerateTasks(ref tasks, urls, ref urlfunc, ref urls_result);
 
+                        // run test url for 200 response 
                         Task.WhenAll(tasks);
-                        Application.Current.Dispatcher.BeginInvoke(
-                           System.Windows.Threading.DispatcherPriority.Normal
-                           , new DispatcherOperationCallback(delegate
-                           {
-                               StatusValue = 100;
-                               return null;
-                           }), null);
+                        
                         // join to fit on the screen
-                        string message = String.Join("\n", urls_result);
-                        Application.Current.Dispatcher.Invoke(() =>
-                        {
-                            Outrext window_out = new Outrext();
-                            window_out.Show();
-                            window_out.textOutput.Text = message;
-                            StatusValue = 1;
-                        });
+                        Application.Current.Dispatcher.BeginInvoke(
+                            DispatcherPriority.Normal, 
+                            new DispatcherOperationCallback(delegate
+                            {
+                                   StatusValue = 100;
+                                   Outrext window_out = new Outrext();
+                                   window_out.Show();
+                                   window_out.textOutput.Text = String.Join("\n", urls_result);
+                                   StatusValue = 1;
+                                   return null;
+                            }), 
+                        null);
                     });
                 });
             }
