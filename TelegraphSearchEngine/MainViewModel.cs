@@ -9,18 +9,21 @@ using System.Security.Policy;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Shapes;
 using System.Windows.Threading;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace TelegraphSearchEngine
 {
     class MainViewModel : INotifyPropertyChanged
     {
+        // to respond to events 
         public event PropertyChangedEventHandler? PropertyChanged;
         public void OnPropertyChanged([CallerMemberName] string prop = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
         }
-
+        // progress bar number 
         private int _StatusValue;
         public int StatusValue
         {
@@ -31,6 +34,7 @@ namespace TelegraphSearchEngine
                 OnPropertyChanged();
             }
         }
+        // the name of the article in the Telegraph, possibly spaces
         private string _NameValue = "anon";
         public string NameValue
         {
@@ -41,6 +45,7 @@ namespace TelegraphSearchEngine
                 OnPropertyChanged();
             }
         }
+        // language for search, for translite to work 
         private string _LangValue = "en";
         public string LangValue
         {
@@ -54,8 +59,10 @@ namespace TelegraphSearchEngine
 
         public MainViewModel()
         {
-            Task.Factory.StartNew(() =>
+            // new task on a background thread with lambda fn
+            Task.Factory.StartNew(() => 
             {
+                // add the number of statuses up to 35 (as for start-up processes)
                 while (StatusValue <= 35)
                 {
                     Task.Delay(1000).Wait();
@@ -89,7 +96,7 @@ namespace TelegraphSearchEngine
                         // run test url for 200 response 
                         Task.WhenAll(tasks);
                         
-                        // join to fit on the screen
+                        // join to fit on the screen on new window ( FIXME: scroll in outrext )
                         Application.Current.Dispatcher.BeginInvoke(
                             DispatcherPriority.Normal, 
                             new DispatcherOperationCallback(delegate
@@ -110,29 +117,37 @@ namespace TelegraphSearchEngine
             ref List<Task<byte>> tasks, List<string> urls, 
             ref UrlFunctions urlfunc, ref List<string> urls_result)
         {
+            // Declaring an enumeration of urls
             foreach (var url in urls)
             {
+                // Trying to get the status URL corresponding to the current URL
                 try
                 {
                     var task = urlfunc.GetStatusUrl(url);
                     tasks.Add(task);
                 }
+                // Catching httpClient.GetAsync exceptions and displaying a message box
                 catch (Exception ex)
                 {
                     MessageBox.Show(ex.Message);
                 }
             }
+            // Calling the Windows dispatcher to update Status in ProgressBar from a background thread
             Application.Current.Dispatcher.BeginInvoke(
                System.Windows.Threading.DispatcherPriority.Normal
                , new DispatcherOperationCallback(delegate
                {
                    StatusValue = 50;
-                   return null;
+                   return null; 
                }), null);
             for (int i = 0; i < tasks.Count; i++)
             {
+                // Check if the current task was successful
                 if (tasks[i].Result == 1)
+                {
+                    // Add the current URL to the list of successful URLs
                     urls_result.Add(urls[i]);
+                }
             }
         }
     }
@@ -164,6 +179,7 @@ namespace TelegraphSearchEngine
                             urls.Add(url);
                         }
                     }
+                    // any case due to the specifics of url tg operation
                     url = base_url + article_name + "-" + i_s + "-" + j_s;
                     urls.Add(url);
 
@@ -196,13 +212,16 @@ namespace TelegraphSearchEngine
         {
             // replacing each character with the corresponding one in the dictionary or leave it as it is
             string result = "";
+            // each character in the source string
             foreach (var ch in source)
             {
                 string reverse_ch = "";
-                if (dictionaryChar.TryGetValue(ch.ToString(), out reverse_ch!)) // get vaule by key 
+                // check if the reverse character for ch is in the dictionary
+                if (dictionaryChar.TryGetValue(ch.ToString(), out reverse_ch!))
                 {
                     result += reverse_ch;
                 }
+                // implies that the other characters in the target language
                 else result += ch;
             }
             return result;

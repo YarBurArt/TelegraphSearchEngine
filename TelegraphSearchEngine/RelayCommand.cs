@@ -15,7 +15,7 @@ namespace TelegraphSearchEngine
             remove { CommandManager.RequerySuggested -= value; }
         }
 
-        public RelayCommand(Action<object> execute, Func<object, bool> canExecute = () => { return true; })
+        public RelayCommand(Action<object> execute, Func<object, bool> canExecute = null!)
         {
             this.execute = execute;
             this.canExecute = canExecute;
@@ -23,11 +23,11 @@ namespace TelegraphSearchEngine
 
         public bool CanExecute(object? parameter)
         {
-            return this.canExecute == null || this.canExecute(parameter);
+            return this.canExecute == null || this.canExecute(parameter ?? true);
         }
         public void Execute(object? parameter)
         {
-            this.execute(parameter);
+            this.execute(parameter ?? true);
         }
     }
 }
