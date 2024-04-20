@@ -8,7 +8,6 @@ This WPF application utilizes the Model-View-ViewModel (MVVM) pattern to provide
 
 - Visual Studio 2019 or higher
 - C# and XAML development experience
-- Running the application:
 
 ### Setup:
 - Clone the project repository from GitHub.
