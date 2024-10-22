@@ -56,9 +56,11 @@ namespace TelegraphSearchEngine
                 OnPropertyChanged();
             }
         }
+        private readonly IArticleRepository _articleRepository;
 
-        public MainViewModel()
+        public MainViewModel(IArticleRepository articleRepository)
         {
+            _articleRepository = articleRepository;
             // new task on a background thread with lambda fn
             Task.Factory.StartNew(() => 
             {
@@ -71,6 +73,54 @@ namespace TelegraphSearchEngine
             });
         }
 
+        private string _keywords;
+        public string Keywords
+        {
+            get { return _keywords; }
+            set
+            {
+                _keywords = value;
+                OnPropertyChanged(nameof(Keywords));
+                LoadArticles();
+            }
+        }
+
+        private List<ArticleModel> _articles;
+        public List<ArticleModel> Articles
+        {
+            get { return _articles; }
+            set
+            {
+                _articles = value;
+                OnPropertyChanged(nameof(Articles));
+            }
+        }
+
+        private async void LoadArticles()
+        {
+            Articles = await _articleRepository.GetArticlesByKeywordsAsync(Keywords);
+        }
+
+        private ICommand _saveArticleCommand;
+        public ICommand SaveArticleCommand
+        {
+            get
+            {
+                if (_saveArticleCommand == null)
+                {
+                    _saveArticleCommand = new RelayCommand(async (object n) =>
+                    {
+                        var newArticle = new ArticleModel
+                        {
+                            Url = "https://example.com",
+                            Keywords = "example, keyword"
+                        };
+                        await _articleRepository.SaveArticleAsync(newArticle);
+                    });
+                }
+                return _saveArticleCommand;
+            }
+        }
 
         public ICommand ClickStartSearch
         {
@@ -104,7 +154,7 @@ namespace TelegraphSearchEngine
                                    StatusValue = 100;
                                    Outrext window_out = new Outrext();
                                    window_out.Show();
-                                   window_out.textOutput.Text = String.Join("\n", urls_result);
+                                   window_out.textOutput.Text = string.Join("\n", urls_result);
                                    StatusValue = 1;
                                    return null;
                             }), 
