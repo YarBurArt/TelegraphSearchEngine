@@ -14,14 +14,14 @@ namespace TelegraphSearchEngine
     public class ArticleModel
     {
         public int Id { get; set; }
-        public string Url { get; set; }
-        public string Keywords { get; set; }
+        public required string Url { get; set; }
+        public required string Keywords { get; set; }
     }
 
     public class ArticleRepository : IArticleRepository
     {
         private readonly string _connectionString;
-        private SqlConnection connection = null;
+        private SqlConnection? connection = null;
 
         public ArticleRepository(string connectionString)
         {

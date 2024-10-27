@@ -1,17 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq.Expressions;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
-using System.Security.Policy;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Shapes;
 using System.Windows.Threading;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace TelegraphSearchEngine
 {
@@ -61,16 +57,6 @@ namespace TelegraphSearchEngine
         public MainViewModel(IArticleRepository articleRepository)
         {
             _articleRepository = articleRepository;
-            // new task on a background thread with lambda fn
-            Task.Factory.StartNew(() => 
-            {
-                // add the number of statuses up to 35 (as for start-up processes)
-                while (StatusValue <= 35)
-                {
-                    Task.Delay(1000).Wait();
-                    StatusValue++;
-                }
-            });
         }
 
         private string _keywords;
@@ -128,36 +114,43 @@ namespace TelegraphSearchEngine
             {
                 return new RelayCommand((obj) =>
                 {
-                    Task.Factory.StartNew(() =>
+                    Task.Factory.StartNew(async () => // async for UI updates
                     {
-                        // after pressing start, the values in the fields are processed and you show the result in MessageBox 
+                        // after pressing start, the values in the fields are processed show the result in MessageBox 
                         var urlfunc = new UrlFunctions();
                         var tasks = new List<Task<byte>>();
+                        StatusValue = 0;
 
                         var urls = UrlFunctions.GenerateArticleUrl(
                             NameValue ?? "anon",
                             LangValue ?? "en",
-                            false // old (checkBox1.Content.ToString() == "Checked") ?? false
+                            false // (checkBox1.Content.ToString() == "Checked") ?? false
                             );
                         var urls_result = new List<string>();
                         // to each his own task, an asynchronous task
                         GenerateTasks(ref tasks, urls, ref urlfunc, ref urls_result);
+                        // Run each task and update StatusValue accordingly
+                        for (int i = 0; i < tasks.Count; i++)
+                        {
+                            await tasks[i]; // Using Wait to block until the task is complete
 
-                        // run test url for 200 response 
-                        Task.WhenAll(tasks);
-                        
-                        // join to fit on the screen on new window ( FIXME: scroll in outrext )
-                        Application.Current.Dispatcher.BeginInvoke(
-                            DispatcherPriority.Normal, 
+                            // update StatusValue to reflect progress
+                            StatusValue = (i + 1) * 100 / tasks.Count; // Example: 0%, 33%, 66%, 100%
+                            await Task.Delay(1);
+                        }
+
+                        // after all tasks are completed, update the UI to default 
+                        await Application.Current.Dispatcher.BeginInvoke(
+                            DispatcherPriority.Normal,
                             new DispatcherOperationCallback(delegate
                             {
-                                   StatusValue = 100;
-                                   Outrext window_out = new Outrext();
-                                   window_out.Show();
-                                   window_out.textOutput.Text = string.Join("\n", urls_result);
-                                   StatusValue = 1;
-                                   return null;
-                            }), 
+                                StatusValue = 100; // set StatusValue to 100% upon completion
+                                Outrext window_out = new Outrext();
+                                window_out.Show();
+                                window_out.textOutput.Text = string.Join("\n", urls_result);
+                                StatusValue = 1; // reset StatusValue
+                                return null;
+                            }),
                         null);
                     });
                 });
@@ -187,7 +180,7 @@ namespace TelegraphSearchEngine
                System.Windows.Threading.DispatcherPriority.Normal
                , new DispatcherOperationCallback(delegate
                {
-                   StatusValue = 50;
+                   StatusValue = 1;
                    return null; 
                }), null);
             for (int i = 0; i < tasks.Count; i++)
