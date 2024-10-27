@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
@@ -59,6 +60,7 @@ namespace TelegraphSearchEngine
             _articleRepository = articleRepository;
         }
 
+        //private List<string> _keyWords = new List<string>(); // store article keywords
         private string _keywords;
         public string Keywords
         {
@@ -166,7 +168,11 @@ namespace TelegraphSearchEngine
                 // Trying to get the status URL corresponding to the current URL
                 try
                 {
-                    var task = urlfunc.GetStatusUrl(url);
+                    // lambda to update the Keywords property
+                    var task = urlfunc.GetStatusUrl(url, keywords =>
+                    {
+                        Keywords = keywords; // to Keywords property in MainViewModel here
+                    });
                     tasks.Add(task);
                 }
                 // Catching httpClient.GetAsync exceptions and displaying a message box
@@ -196,6 +202,7 @@ namespace TelegraphSearchEngine
     }
     public class UrlFunctions
     {
+
         HttpClient httpClient = new HttpClient();
         public static List<string> GenerateArticleUrl(string article_name, string request_language, bool isadvanced)
         {
@@ -230,12 +237,34 @@ namespace TelegraphSearchEngine
             }
             return urls;
         }
-        public async Task<byte> GetStatusUrl(string url)
+        public async Task<byte> GetStatusUrl(string url, Action<string> updateKeywords)
         {
             // check url status, this list is then filtered out
             using HttpResponseMessage response = await httpClient.GetAsync(url);
-            if (response is { StatusCode: HttpStatusCode.OK }) return 1; // response.StatusCode
+            if (response is { StatusCode: HttpStatusCode.OK }) {
+                string content = await response.Content.ReadAsStringAsync();
+                // get 60 most frequent words, +4 metainfo, for cache optimization
+                var keywords = string.Join(", ", GetTopFrequentWords(content, 62));
+                updateKeywords(keywords);  
+                return 1;
+            } // response.StatusCode
             return 0;
+        }
+        private List<string> GetTopFrequentWords(string content, int topN)
+        {
+            // normalize the content: remove punctuation, convert to lower case, etc.
+            var words = content
+                .ToLowerInvariant()
+                .Split(new[] { ' ', '\n', '\r', ',', '.', ';', '!', '?' }, StringSplitOptions.RemoveEmptyEntries)
+                .Where(word => word.Length >= 5) // filter out short words
+                .GroupBy(word => word)
+                .Select(group => new { Word = group.Key, Count = group.Count() })
+                .OrderByDescending(x => x.Count)
+                .Take(topN)
+                .Select(x => x.Word)
+                .ToList();
+
+            return words;
         }
     }
     public class Translit
