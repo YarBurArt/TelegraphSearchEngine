@@ -11,12 +11,8 @@ namespace TelegraphSearchEngine
         {
             base.OnStartup(e);
 
-            var connectionString = "Data Source=./SQLEXPRESS;Initial Catalog=articledb;Integrated Security=True";
-            var articleRepository = new ArticleRepository(connectionString);
-
-            var mainViewModel = new MainViewModel(articleRepository);
-            var mainWindow = new MainWindow { DataContext = mainViewModel };
-            mainWindow.Show();
+            //var mainWindow = new MainWindow();
+            //mainWindow.Show();
         }
     }
 

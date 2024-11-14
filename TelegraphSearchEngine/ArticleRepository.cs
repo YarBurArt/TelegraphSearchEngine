@@ -1,12 +1,9 @@
 ﻿using System.Collections.Generic;
-using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Data.SqlClient;
-using System.Data;
-using System.Linq;
-using System.Configuration;
 using System.Threading.Tasks;
+//using System.Data.SqlClient;
+using System.Data.SQLite;
+using System.Linq;
+
 using Dapper;
 
 namespace TelegraphSearchEngine
@@ -20,17 +17,21 @@ namespace TelegraphSearchEngine
 
     public class ArticleRepository : IArticleRepository
     {
-        private readonly string _connectionString;
-        private SqlConnection? connection = null;
+        private readonly string _connectionString = @"Data Source=mydatabase.db";
+        //private SqlConnection? connection = null;
+        private readonly SQLiteConnection _connection;
 
         public ArticleRepository(string connectionString)
         {
             _connectionString = connectionString;
         }
-
+        // TODO: special circumstances exceptions
         public async Task<List<ArticleModel>> GetArticlesByKeywordsAsync(string keywords)
         {
-            using (connection = new SqlConnection(_connectionString))
+            using (
+                var connection = new SQLiteConnection(_connectionString) 
+                // new SqlConnection(_connectionString) // MS SQL
+                )
             {
                 await connection.OpenAsync();
 
@@ -44,7 +45,10 @@ namespace TelegraphSearchEngine
 
         public async Task SaveArticleAsync(ArticleModel article)
         {
-            using (connection = new SqlConnection(_connectionString))
+            using (
+                var connection = new SQLiteConnection(_connectionString)
+                // new SqlConnection(_connectionString) // MS SQL
+                )
             {
                 await connection.OpenAsync();
 
