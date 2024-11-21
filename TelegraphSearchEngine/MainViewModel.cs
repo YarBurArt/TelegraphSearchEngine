@@ -170,45 +170,34 @@ namespace TelegraphSearchEngine
             null);
         }
         private void GenerateTasks(
-            ref List<Task<byte>> tasks, List<string> urls, 
+            ref List<Task<byte>> tasks, List<string> urls,
             ref UrlFunctions urlfunc, ref List<string> urls_result)
         {
-            // Declaring an enumeration of urls
-            foreach (var url in urls)
-            {
-                // Trying to get the status URL corresponding to the current URL
-                try
-                {
+            foreach (var url in urls) {
+                try {
                     // lambda to update the Keywords property
-                    var task = urlfunc.GetStatusUrl(url, keywords =>
-                    {
+                    var task = urlfunc.GetStatusUrl(url, keywords => {
                         Keywords = keywords; // to Keywords property in MainViewModel here
                     });
                     tasks.Add(task);
                 }
                 // Catching httpClient.GetAsync exceptions and displaying a message box
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message);
-                }
+                catch (Exception ex) { MessageBox.Show(ex.Message); }
             }
-            // Calling the Windows dispatcher to update Status in ProgressBar from a background thread
-            Application.Current.Dispatcher.BeginInvoke(
-               System.Windows.Threading.DispatcherPriority.Normal
-               , new DispatcherOperationCallback(delegate
-               {
-                   StatusValue = 1;
-                   return null; 
-               }), null);
+            UpdateStatusValue();
             for (int i = 0; i < tasks.Count; i++)
-            {
-                // Check if the current task was successful
-                if (tasks[i].Result == 1)
+                if (tasks[i].Result == 1) urls_result.Add(urls[i]); 
+        }
+
+        private void UpdateStatusValue() {
+            Application.Current.Dispatcher.BeginInvoke(
+                System.Windows.Threading.DispatcherPriority.Normal,
+                new DispatcherOperationCallback(delegate 
                 {
-                    // Add the current URL to the list of successful URLs
-                    urls_result.Add(urls[i]);
-                }
-            }
+                    StatusValue = 1;  // StatusValue on the UI thread
+                    return null;
+                }),
+            null);
         }
     }
     public class UrlFunctions
