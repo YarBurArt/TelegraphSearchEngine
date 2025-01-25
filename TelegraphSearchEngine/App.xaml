@@ -4,6 +4,6 @@
              xmlns:local="clr-namespace:TelegraphSearchEngine"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <BitmapImage x:Key="AppIcon">Resources/telegraph.ico</BitmapImage>
     </Application.Resources>
 </Application>

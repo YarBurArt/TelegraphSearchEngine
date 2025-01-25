@@ -47,7 +47,7 @@ namespace TelegraphSearchEngine
 
                         await CreateArticlesTableAsync(connection);
                         // Retry the query
-                        var query = "SELECT * FROM articles WHERE CONTAINS(keywords, @keywords)";
+                        var query = "SELECT * FROM articles WHERE keywords LIKE '%@keywords%'";
                         var articles = await connection.QueryAsync<ArticleModel>(query, new { keywords });
                         List<ArticleModel> articles_aslist = articles.ToList();
                         return articles_aslist;

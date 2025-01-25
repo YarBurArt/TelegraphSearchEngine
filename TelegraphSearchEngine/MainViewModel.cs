@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 
@@ -156,6 +157,7 @@ namespace TelegraphSearchEngine
 
         private async Task UpdateUIAfterTasksCompletion(List<string> urls_result)
         {
+            // show result and reset progress status
             await Application.Current.Dispatcher.BeginInvoke(
                 DispatcherPriority.Normal,
                 new DispatcherOperationCallback(delegate
@@ -163,7 +165,11 @@ namespace TelegraphSearchEngine
                     StatusValue = 100; // set StatusValue to 100% upon completion
                     Outrext window_out = new Outrext();
                     window_out.Show();
-                    window_out.textOutput.Text = string.Join("\n", urls_result);
+                    ListView listView = window_out.FindName("textOutput") as ListView;
+
+                    List<object> itemsSource = UrlFunctions.SplitUrlsByLenght(ref urls_result);
+                    listView.ItemsSource = itemsSource;
+                    //window_out.textOutput.Text = string.Join("\n", urls_result);
                     StatusValue = 1; // reset StatusValue
                     return null;
                 }),
@@ -265,6 +271,24 @@ namespace TelegraphSearchEngine
                 .ToList();
 
             return words;
+        }
+        public static List<object> SplitUrlsByLenght(ref List<string> urls_result)
+        {
+            List<string> shortStrings = new List<string>();
+            List<string> longStrings = new List<string>();
+
+            foreach (string str in urls_result) {
+                // split each by threshold
+                if (str.Length <= 20)  
+                    shortStrings.Add(str);
+                else 
+                    longStrings.Add(str);
+            }
+
+            var itemsSource = new List<object>();
+            itemsSource.AddRange(shortStrings);
+            itemsSource.AddRange(longStrings);
+            return itemsSource;
         }
     }
     public class Translit
