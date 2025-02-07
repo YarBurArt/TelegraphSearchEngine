@@ -13,7 +13,7 @@ using System.Windows.Threading;
 
 namespace TelegraphSearchEngine
 {
-    class MainViewModel : INotifyPropertyChanged
+    class MainViewModel(IArticleRepository articleRepository) : INotifyPropertyChanged
     {
         // to respond to events 
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -54,12 +54,7 @@ namespace TelegraphSearchEngine
                 OnPropertyChanged();
             }
         }
-        private readonly IArticleRepository _articleRepository;
-
-        public MainViewModel(IArticleRepository articleRepository)
-        {
-            _articleRepository = articleRepository;
-        }
+        private readonly IArticleRepository _articleRepository = articleRepository;
 
         //private List<string> _keyWords = new List<string>(); // store article keywords
         private string _keywords;
@@ -95,18 +90,16 @@ namespace TelegraphSearchEngine
         {
             get
             {
-                if (_saveArticleCommand == null)
-                {
-                    _saveArticleCommand = new RelayCommand(async (object n) =>
+                _saveArticleCommand ??= new RelayCommand(async (object n) =>
                     {
                         var newArticle = new ArticleModel
                         {
                             Url = "https://example.com",
                             Keywords = "example, keyword"
                         };
+                        // var newArticle Article = (ArticleModel)n; // for crutch  
                         await _articleRepository.SaveArticleAsync(newArticle);
                     });
-                }
                 return _saveArticleCommand;
             }
         }
@@ -163,12 +156,15 @@ namespace TelegraphSearchEngine
                 new DispatcherOperationCallback(delegate
                 {
                     StatusValue = 100; // set StatusValue to 100% upon completion
-                    Outrext window_out = new Outrext();
+                    Outrext window_out = new();
                     window_out.Show();
-                    ListView listView = window_out.FindName("textOutput") as ListView;
+                    ListView? listView = window_out.FindName("textOutput") as ListView;
 
                     List<object> itemsSource = UrlFunctions.SplitUrlsByLenght(ref urls_result);
                     listView.ItemsSource = itemsSource;
+
+                    // TODO: add save to db
+
                     //window_out.textOutput.Text = string.Join("\n", urls_result);
                     StatusValue = 1; // reset StatusValue
                     return null;
@@ -209,12 +205,14 @@ namespace TelegraphSearchEngine
     public class UrlFunctions
     {
 
-        HttpClient httpClient = new HttpClient();
+        readonly HttpClient httpClient = new();
+        private static readonly char[] separator = [' ', '\n', '\r', ',', '.', ';', '!', '?'];
+
         public static List<string> GenerateArticleUrl(string article_name, string request_language, bool isadvanced)
         {
             // creating a url by adding title, date and article number
-            Translit translit = new Translit();
-            var urls = new List<string>();
+            Translit translit = new();
+            List<string> urls = [];
             string base_url = "https://telegra.ph/";
             string url;
 
@@ -256,12 +254,12 @@ namespace TelegraphSearchEngine
             } // response.StatusCode
             return 0;
         }
-        private List<string> GetTopFrequentWords(string content, int topN)
+        private static List<string> GetTopFrequentWords(string content, int topN)
         {
             // normalize the content: remove punctuation, convert to lower case, etc.
             var words = content
                 .ToLowerInvariant()
-                .Split(new[] { ' ', '\n', '\r', ',', '.', ';', '!', '?' }, StringSplitOptions.RemoveEmptyEntries)
+                .Split(separator, StringSplitOptions.RemoveEmptyEntries)
                 .Where(word => word.Length >= 5) // filter out short words
                 .GroupBy(word => word)
                 .Select(group => new { Word = group.Key, Count = group.Count() })
@@ -274,8 +272,8 @@ namespace TelegraphSearchEngine
         }
         public static List<object> SplitUrlsByLenght(ref List<string> urls_result)
         {
-            List<string> shortStrings = new List<string>();
-            List<string> longStrings = new List<string>();
+            List<string> shortStrings = [];
+            List<string> longStrings = [];
 
             foreach (string str in urls_result) {
                 // split each by threshold
@@ -295,7 +293,7 @@ namespace TelegraphSearchEngine
     {
         // translit russian text just like the telegraph does
         // example: шифр -> shifr (translate like cipher)
-        Dictionary<string, string> dictionaryChar = new Dictionary<string, string>()
+        readonly Dictionary<string, string> dictionaryChar = new()
         {
             {"а","a"},  {"б","b"},  {"в","v"},   {"г","g"}, {"д","d"}, {"е","e"},
             {"ё","yo"}, {"ж","zh"}, {"з","z"},   {"и","i"}, {"й","y"}, {"к","k"},

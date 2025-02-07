@@ -3,22 +3,16 @@ using System.Windows.Input;
 
 namespace TelegraphSearchEngine
 {
-    class RelayCommand : ICommand
+    class RelayCommand(Action<object> execute, Func<object, bool> canExecute = null!) : ICommand
     {
-        private Action<object> execute;
-        private Func<object, bool> canExecute;
+        private readonly Action<object> execute = execute;
+        private readonly Func<object, bool> canExecute = canExecute;
 
 
         public event EventHandler? CanExecuteChanged
         {
             add { CommandManager.RequerySuggested += value; }
             remove { CommandManager.RequerySuggested -= value; }
-        }
-
-        public RelayCommand(Action<object> execute, Func<object, bool> canExecute = null!)
-        {
-            this.execute = execute;
-            this.canExecute = canExecute;
         }
 
         public bool CanExecute(object? parameter)
