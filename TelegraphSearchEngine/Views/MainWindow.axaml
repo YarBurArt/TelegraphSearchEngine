@@ -1,0 +1,94 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:TelegraphSearchEngine.ViewModels"
+        xmlns:models="using:TelegraphSearchEngine.Models"
+        mc:Ignorable="d"
+        d:DesignWidth="760" d:DesignHeight="620"
+        x:Class="TelegraphSearchEngine.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="Telegraph Search Engine"
+        Width="760" Height="620"
+        MinWidth="560" MinHeight="440"
+        WindowStartupLocation="CenterScreen"
+        Icon="/telegraph.ico">
+
+    <Grid Margin="16"
+          RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,*"
+          ColumnDefinitions="Auto,*"
+          RowSpacing="8"
+          ColumnSpacing="12">
+
+        <TextBlock Grid.Row="0" Grid.Column="0"
+                   Text="Article name:"
+                   VerticalAlignment="Center"
+                   FontSize="15" />
+        <TextBox Grid.Row="0" Grid.Column="1"
+                 Text="{Binding NameValue}"
+                 PlaceholderText="e.g. shifr"
+                 MaxLength="250"
+                 FontSize="15" />
+
+        <TextBlock Grid.Row="1" Grid.Column="0"
+                   Text="Language:"
+                   VerticalAlignment="Center"
+                   FontSize="15" />
+        <TextBox Grid.Row="1" Grid.Column="1"
+                 Text="{Binding LanguageValue}"
+                 PlaceholderText="en"
+                 MaxLength="20"
+                 FontSize="15" />
+
+        <Grid Grid.Row="2" Grid.ColumnSpan="2" ColumnDefinitions="*,Auto">
+            <CheckBox Grid.Column="0"
+                      Content="Advanced mode (also checks indexed URLs, much slower)"
+                      IsChecked="{Binding AdvancedMode}"
+                      VerticalAlignment="Center" />
+            <Button Grid.Column="1"
+                    Content="Start search"
+                    Command="{Binding SearchCommand}"
+                    IsDefault="True"
+                    MinWidth="130"
+                    Height="36"
+                    FontSize="15" />
+        </Grid>
+
+        <ProgressBar Grid.Row="3" Grid.ColumnSpan="2"
+                     Minimum="0" Maximum="100"
+                     Value="{Binding StatusValue}"
+                     Height="18" />
+
+        <TextBlock Grid.Row="4" Grid.ColumnSpan="2"
+                   Text="{Binding StatusMessage}"
+                   TextWrapping="Wrap"
+                   MinHeight="20" />
+
+        <TextBlock Grid.Row="5" Grid.ColumnSpan="2"
+                   Text="{Binding Results.Count, StringFormat='Results ({0})'}"
+                   FontWeight="SemiBold"
+                   FontSize="14" />
+
+        <ListBox Grid.Row="6" Grid.ColumnSpan="2"
+                 ItemsSource="{Binding Results}"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="models:ArticleModel">
+                    <Grid ColumnDefinitions="2*,3*" ColumnSpacing="12" Margin="0,4">
+                        <SelectableTextBlock Grid.Column="0"
+                                             Text="{Binding Url}"
+                                             TextWrapping="Wrap" />
+                        <SelectableTextBlock Grid.Column="1"
+                                             Text="{Binding Keywords}"
+                                             TextWrapping="Wrap"
+                                             MaxLines="2"
+                                             TextTrimming="CharacterEllipsis"
+                                             FontSize="12"
+                                             Opacity="0.7" />
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+    </Grid>
+</Window>
