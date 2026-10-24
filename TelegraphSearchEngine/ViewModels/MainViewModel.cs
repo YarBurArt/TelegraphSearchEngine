@@ -86,22 +86,50 @@ public sealed class MainViewModel : INotifyPropertyChanged
         StatusValue = 0;
         Results.Clear();
 
-        string? dbWarning = null;
+        string? indexWarning = null;
 
         try
         {
-            // brute-force telegra.ph; a url that answers becomes an article row
+            // the local index answers instantly; the live scan below keeps it growing
+            IReadOnlyList<ArticleModel> stored = [];
+            try
+            {
+                stored = await _repository.FindArticlesAsync(slug, name.ToLowerInvariant());
+            }
+            catch (Exception exception)
+            {
+                indexWarning = exception.Message;
+            }
+
+            AddResults(stored);
+
+            var knownUrls = new HashSet<string>(
+                stored.Select(article => article.Url),
+                StringComparer.Ordinal);
+            if (stored.Count > 0)
+            {
+                StatusMessage = $"{stored.Count} article(s) from the local index for “{slug}”, " +
+                                "scanning telegra.ph for more…";
+            }
+
             var urls = UrlFunctions.GenerateArticleUrls(slug, AdvancedMode);
             var progress = new Progress<int>(value => StatusValue = value);
             var found = await _searchService.FindArticlesAsync(urls, progress);
 
             found.Sort((left, right) => string.CompareOrdinal(left.Url, right.Url));
             StatusValue = 100;
-            AddResults(found);
+
+            // the scan rediscovers stored urls; append only what the list misses
+            foreach (var article in found.Where(article => knownUrls.Add(article.Url)))
+            {
+                Results.Add(article);
+            }
 
             if (found.Count == 0)
             {
-                StatusMessage = $"No articles found for “{slug}”. Check the article name and language.";
+                StatusMessage = Results.Count > 0
+                    ? $"Nothing new on telegra.ph, {Results.Count} article(s) came from the local index."
+                    : $"No articles found for “{slug}”. Check the article name and language.";
                 return;
             }
 
@@ -111,12 +139,12 @@ public sealed class MainViewModel : INotifyPropertyChanged
             }
             catch (Exception exception)
             {
-                dbWarning = exception.Message;
+                indexWarning = exception.Message;
             }
 
-            StatusMessage = dbWarning is null
-                ? $"Found {found.Count} article(s) for “{slug}”, saved to the database."
-                : $"Found {found.Count} article(s) for “{slug}”. Database unavailable: {dbWarning}";
+            StatusMessage = indexWarning is null
+                ? $"Found {found.Count} article(s) for “{slug}”, index updated."
+                : $"Found {found.Count} article(s) for “{slug}”. Index unavailable: {indexWarning}";
         }
         catch (OperationCanceledException)
         {
