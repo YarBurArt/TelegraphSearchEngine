@@ -20,6 +20,9 @@ public sealed class ArticleRepository : IArticleRepository
         );
         """;
 
+    // bumped when the schema changes shape; a drop beats a migration here
+    private const int SchemaVersion = 2;
+
     private readonly string _connectionString;
     private readonly Lazy<Task> _initialization;
 
@@ -102,7 +105,18 @@ public sealed class ArticleRepository : IArticleRepository
         await using var connection = new SqliteConnection(_connectionString);
         await connection.OpenAsync();
 
+        var storedVersion = await connection
+            .ExecuteScalarAsync<long>("PRAGMA user_version")
+            .ConfigureAwait(false);
+        if (storedVersion < SchemaVersion)
+        {
+            await connection.ExecuteAsync(
+                "DROP TABLE IF EXISTS articles; DROP TABLE IF EXISTS searches;"
+            ).ConfigureAwait(false);
+        }
+
         await connection.ExecuteAsync(CreateArticlesTableSql).ConfigureAwait(false);
+        await connection.ExecuteAsync($"PRAGMA user_version = {SchemaVersion};").ConfigureAwait(false);
     }
 
     // like treats % and _ as wildcards, which user input must not control
