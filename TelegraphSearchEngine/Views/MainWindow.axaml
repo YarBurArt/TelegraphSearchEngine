@@ -59,10 +59,10 @@
                      Value="{Binding StatusValue}"
                      Height="18" />
 
-        <TextBlock Grid.Row="4" Grid.ColumnSpan="2"
-                   Text="{Binding StatusMessage}"
-                   TextWrapping="Wrap"
-                   MinHeight="20" />
+        <SelectableTextBlock Grid.Row="4" Grid.ColumnSpan="2"
+                             Text="{Binding StatusMessage}"
+                             TextWrapping="Wrap"
+                             MinHeight="20" />
 
         <TextBlock Grid.Row="5" Grid.ColumnSpan="2"
                    Text="{Binding Results.Count, StringFormat='Results ({0})'}"
@@ -75,9 +75,12 @@
             <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="models:ArticleModel">
                     <Grid ColumnDefinitions="2*,3*" ColumnSpacing="12" Margin="0,4">
-                        <SelectableTextBlock Grid.Column="0"
-                                             Text="{Binding Url}"
-                                             TextWrapping="Wrap" />
+                        <Button Grid.Column="0"
+                                Classes="link"
+                                Content="{Binding Url}"
+                                Tag="{Binding Url}"
+                                Click="OnOpenArticle"
+                                HorizontalContentAlignment="Left" />
                         <SelectableTextBlock Grid.Column="1"
                                              Text="{Binding Keywords}"
                                              TextWrapping="Wrap"
@@ -91,4 +94,20 @@
         </ListBox>
 
     </Grid>
+
+    <Window.Styles>
+        <!-- a result url is a button that opens the article, colored by the
+             theme accent instead of a hardcoded palette -->
+        <Style Selector="Button.link">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="Foreground" Value="{DynamicResource HighlightBrush}" />
+        </Style>
+        <Style Selector="Button.link:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="TextBlock.Foreground" Value="{DynamicResource HighlightBrush}" />
+            <Setter Property="TextBlock.TextDecorations" Value="Underline" />
+        </Style>
+    </Window.Styles>
 </Window>

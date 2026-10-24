@@ -3,6 +3,8 @@
              x:Class="TelegraphSearchEngine.App"
              RequestedThemeVariant="Default">
     <Application.Styles>
-        <FluentTheme />
+        <!-- simple instead of fluent: fluent's dark palette paints a #000
+             window, simple's is #282828 and follows the system variant -->
+        <SimpleTheme />
     </Application.Styles>
 </Application>
